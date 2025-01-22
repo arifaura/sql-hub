@@ -4,7 +4,11 @@ import { useState, useEffect, useRef } from 'react'
 import ThemeToggle from '../ThemeToggle'
 import { useGsapAnimations } from '../../hooks/useGsapAnimations'
 import gsap from 'gsap'
+import ScrollTrigger from 'gsap/ScrollTrigger'
 import { FaBars, FaTimes, FaUser } from 'react-icons/fa'
+
+// Register ScrollTrigger plugin
+gsap.registerPlugin(ScrollTrigger)
 
 function Layout() {
   const location = useLocation()
@@ -21,6 +25,7 @@ function Layout() {
   const footerRef = useRef(null)
   const footerLinksRefs = useRef([])
 
+  // Initial animations
   useEffect(() => {
     // Initial navigation animations
     gsap.fromTo(
@@ -40,10 +45,16 @@ function Layout() {
         ease: 'power3.out',
       }
     )
+  }, [])
 
-    // Footer animations
+  // Footer animations - in a separate useEffect
+  useEffect(() => {
+    if (!footerRef.current) return;
+
     const footerSections = footerRef.current.querySelectorAll('.footer-section')
-    gsap.fromTo(
+    
+    // Create the animation
+    const footerAnimation = gsap.fromTo(
       footerSections,
       { opacity: 0, y: 50 },
       {
@@ -53,11 +64,18 @@ function Layout() {
         stagger: 0.2,
         scrollTrigger: {
           trigger: footerRef.current,
-          start: 'top 80%',
-        },
+          start: 'top bottom-=100',
+          toggleActions: 'play none none none'
+        }
       }
     )
-  }, [])
+
+    // Cleanup function
+    return () => {
+      footerAnimation.kill()
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill())
+    }
+  }, [location.pathname]) // Re-run when route changes
 
   // Mobile menu animation
   useEffect(() => {
@@ -154,16 +172,28 @@ function Layout() {
                 Home
               </Link>
               <Link
-                to="/about"
-                className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/about') ? 'bg-blue-700' : ''}`}
+                to="/lessons"
+                className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/lessons') ? 'bg-blue-700' : ''}`}
               >
-                About
+                Lessons
+              </Link>
+              <Link
+                to="/sql-editor"
+                className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/sql-editor') ? 'bg-blue-700' : ''}`}
+              >
+                SQL Editor
               </Link>
               <Link
                 to="/practice"
                 className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/practice') ? 'bg-blue-700' : ''}`}
               >
                 Practice
+              </Link>
+              <Link
+                to="/about"
+                className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/about') ? 'bg-blue-700' : ''}`}
+              >
+                About
               </Link>
               <Link
                 to="/contact"
@@ -247,16 +277,28 @@ function Layout() {
                   Home
                 </Link>
                 <Link
-                  to="/about"
-                  className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/about') ? 'bg-blue-700' : ''}`}
+                  to="/lessons"
+                  className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/lessons') ? 'bg-blue-700' : ''}`}
                 >
-                  About
+                  Lessons
+                </Link>
+                <Link
+                  to="/sql-editor"
+                  className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/sql-editor') ? 'bg-blue-700' : ''}`}
+                >
+                  SQL Editor
                 </Link>
                 <Link
                   to="/practice"
                   className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/practice') ? 'bg-blue-700' : ''}`}
                 >
                   Practice
+                </Link>
+                <Link
+                  to="/about"
+                  className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/about') ? 'bg-blue-700' : ''}`}
+                >
+                  About
                 </Link>
                 <Link
                   to="/contact"

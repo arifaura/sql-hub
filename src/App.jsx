@@ -1,19 +1,20 @@
-import { BrowserRouter } from 'react-router-dom'
+import { RouterProvider } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
+import { LessonsProvider } from './context/LessonsContext'
 import { Toaster } from 'react-hot-toast'
-import AppRoutes from './routes'
+import router from './routes'
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <ThemeProvider>
-          <AppRoutes />
+    <AuthProvider>
+      <ThemeProvider>
+        <LessonsProvider>
+          <RouterProvider router={router} />
           <Toaster position="top-right" />
-        </ThemeProvider>
-      </AuthProvider>
-    </BrowserRouter>
+        </LessonsProvider>
+      </ThemeProvider>
+    </AuthProvider>
   )
 }
 

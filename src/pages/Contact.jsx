@@ -1,323 +1,293 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
-import { FaEnvelope, FaPhone, FaComments } from 'react-icons/fa';
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaPaperPlane } from 'react-icons/fa';
+import { db } from '../firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '../context/AuthContext';
+
+const INITIAL_FORM_STATE = {
+  name: '',
+  email: '',
+  subject: '',
+  message: ''
+};
 
 function Contact() {
+  const [formData, setFormData] = useState(INITIAL_FORM_STATE);
+  const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedOffice, setSelectedOffice] = useState(null);
-  
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset
-  } = useForm();
+  const { user } = useAuth();
 
-  const offices = [
-    {
-      id: 1,
-      city: 'New York',
-      address: '123 Broadway, New York, NY 10012',
-      phone: '+1 (555) 123-4567',
-      email: 'ny@sqlhub.com',
-      timing: '9:00 AM - 6:00 PM EST',
-      coordinates: { lat: 40.7128, lng: -74.0060 }
-    },
-    {
-      id: 2,
-      city: 'London',
-      address: '456 Oxford Street, London, UK W1C 1AP',
-      phone: '+44 20 7123 4567',
-      email: 'london@sqlhub.com',
-      timing: '9:00 AM - 6:00 PM GMT',
-      coordinates: { lat: 51.5074, lng: -0.1278 }
-    },
-    {
-      id: 3,
-      city: 'Singapore',
-      address: '789 Marina Bay, Singapore 018956',
-      phone: '+65 6789 0123',
-      email: 'singapore@sqlhub.com',
-      timing: '9:00 AM - 6:00 PM SGT',
-      coordinates: { lat: 1.3521, lng: 103.8198 }
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Name validation
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = 'Name must be at least 2 characters';
     }
-  ];
 
-  const onSubmit = async (data) => {
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!user && !formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!user && !emailRegex.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    // Subject validation
+    if (!formData.subject.trim()) {
+      newErrors.subject = 'Subject is required';
+    } else if (formData.subject.trim().length < 5) {
+      newErrors.subject = 'Subject must be at least 5 characters';
+    }
+
+    // Message validation
+    if (!formData.message.trim()) {
+      newErrors.message = 'Message is required';
+    } else if (formData.message.trim().length < 10) {
+      newErrors.message = 'Message must be at least 10 characters';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      toast.error('Please fix the errors in the form');
+      return;
+    }
+
     setIsSubmitting(true);
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Create message document in Firebase
+      const messageData = {
+        name: formData.name.trim(),
+        email: user ? user.email : formData.email.trim(),
+        subject: formData.subject.trim(),
+        message: formData.message.trim(),
+        userId: user?.uid || null,
+        status: 'pending',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      // Add to messages collection
+      const docRef = await addDoc(collection(db, 'messages'), messageData);
       
-      console.log('Form submitted:', data);
-      toast.success('Message sent successfully! We\'ll get back to you soon.');
-      reset();
+      toast.success('Message sent successfully! We will get back to you soon.');
+      
+      // Reset form
+      setFormData(INITIAL_FORM_STATE);
+
+      // Log for debugging
+      console.log('Message stored with ID:', docRef.id);
     } catch (error) {
-      toast.error('Failed to send message. Please try again.');
+      console.error('Error storing message:', error);
+      toast.error(error.message || 'Failed to send message. Please try again later.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleOfficeSelect = (office) => {
-    setSelectedOffice(office);
-  };
-
   return (
-    <div className="min-h-screen bg-white dark:bg-dark-primary">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-brand to-brand-dark text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Get in Touch
-            </h1>
-            <p className="text-xl md:text-2xl mb-8">
-              We're here to help with any questions about our SQL learning platform
-            </p>
-          </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            Contact Us
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-400">
+            Have questions? We'd love to hear from you.
+          </p>
         </div>
-        <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
-      </section>
 
-      {/* Quick Contact Options */}
-      <section className="py-12 bg-brand-light dark:bg-dark-secondary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Email Support */}
-            <div className="bg-white dark:bg-dark-accent p-6 rounded-lg shadow-lg text-center">
-              <div className="w-12 h-12 bg-brand/10 dark:bg-brand/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaEnvelope className="w-6 h-6 text-brand" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-gray-800 dark:text-white">Email Support</h3>
-              <p className="text-gray-600 dark:text-dark-secondary mb-4">
-                Get in touch with our support team via email
-              </p>
-              <a
-                href="mailto:support@sqlhub.com"
-                className="text-brand hover:text-brand-dark transition-colors"
-              >
-                support@sqlhub.com
-              </a>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Contact Information */}
+          <div className="lg:col-span-1">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 space-y-8">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+                Get in Touch
+              </h2>
+              
+              {/* Contact Details */}
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <FaEnvelope className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-base font-medium text-gray-900 dark:text-white">
+                      Email
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      support@sqlhub.com
+                    </p>
+                  </div>
+                </div>
 
-            {/* Phone Support */}
-            <div className="bg-white dark:bg-dark-accent p-6 rounded-lg shadow-lg text-center">
-              <div className="w-12 h-12 bg-brand/10 dark:bg-brand/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaPhone className="w-6 h-6 text-brand" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-gray-800 dark:text-white">Phone Support</h3>
-              <p className="text-gray-600 dark:text-dark-secondary mb-4">
-                Call us directly for immediate assistance
-              </p>
-              <a
-                href="tel:+1234567890"
-                className="text-brand hover:text-brand-dark transition-colors"
-              >
-                +1 (234) 567-890
-              </a>
-            </div>
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <FaPhone className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-base font-medium text-gray-900 dark:text-white">
+                      Phone
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      +1 (555) 123-4567
+                    </p>
+                  </div>
+                </div>
 
-            {/* Live Chat */}
-            <div className="bg-white dark:bg-dark-accent p-6 rounded-lg shadow-lg text-center">
-              <div className="w-12 h-12 bg-brand/10 dark:bg-brand/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaComments className="w-6 h-6 text-brand" />
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <FaMapMarkerAlt className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-base font-medium text-gray-900 dark:text-white">
+                      Location
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      123 SQL Street<br />
+                      Database City, DC 12345<br />
+                      United States
+                    </p>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-gray-800 dark:text-white">Live Chat</h3>
-              <p className="text-gray-600 dark:text-dark-secondary mb-4">
-                Chat with our support team in real-time
-              </p>
-              <button
-                className="text-brand hover:text-brand-dark transition-colors"
-                onClick={() => toast.success('Live chat feature coming soon!')}
-              >
-                Start Chat
-              </button>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Contact Form and Office Locations */}
-      <section className="py-16 bg-white dark:bg-dark-primary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Contact Form */}
-            <div>
-              <h2 className="text-3xl font-bold mb-8 text-gray-800 dark:text-white">Send us a Message</h2>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Contact Form */}
+          <div className="lg:col-span-2">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Name Input */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Full Name
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Name
                   </label>
                   <input
                     type="text"
                     id="name"
-                    {...register('name', { 
-                      required: 'Name is required',
-                      minLength: { value: 2, message: 'Name must be at least 2 characters' }
-                    })}
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand focus:border-brand dark:bg-dark-accent dark:text-white dark:border-gray-600 ${
-                      errors.name ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                    className={`mt-1 block w-full rounded-md shadow-sm py-2 px-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      errors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    placeholder="Your name"
                   />
                   {errors.name && (
-                    <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
+                    <p className="mt-1 text-sm text-red-500">{errors.name}</p>
                   )}
                 </div>
 
+                {/* Email Input */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Email Address
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Email
                   </label>
                   <input
                     type="email"
                     id="email"
-                    {...register('email', { 
-                      required: 'Email is required',
-                      pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: 'Invalid email address'
-                      }
-                    })}
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand focus:border-brand dark:bg-dark-accent dark:text-white dark:border-gray-600 ${
-                      errors.email ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    name="email"
+                    value={user ? user.email : formData.email}
+                    onChange={handleChange}
+                    disabled={!!user || isSubmitting}
+                    className={`mt-1 block w-full rounded-md shadow-sm py-2 px-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      errors.email ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    } ${(user || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    placeholder="your.email@example.com"
                   />
                   {errors.email && (
-                    <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+                    <p className="mt-1 text-sm text-red-500">{errors.email}</p>
                   )}
                 </div>
 
+                {/* Subject Input */}
                 <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Subject
                   </label>
                   <input
                     type="text"
                     id="subject"
-                    {...register('subject', { required: 'Subject is required' })}
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand focus:border-brand dark:bg-dark-accent dark:text-white dark:border-gray-600 ${
-                      errors.subject ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                    className={`mt-1 block w-full rounded-md shadow-sm py-2 px-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      errors.subject ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    placeholder="What is your message about?"
                   />
                   {errors.subject && (
-                    <p className="mt-1 text-sm text-red-500">{errors.subject.message}</p>
+                    <p className="mt-1 text-sm text-red-500">{errors.subject}</p>
                   )}
                 </div>
 
+                {/* Message Input */}
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Message
                   </label>
                   <textarea
                     id="message"
+                    name="message"
                     rows="4"
-                    {...register('message', { 
-                      required: 'Message is required',
-                      minLength: { value: 10, message: 'Message must be at least 10 characters' }
-                    })}
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-brand focus:border-brand dark:bg-dark-accent dark:text-white dark:border-gray-600 ${
-                      errors.message ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                  ></textarea>
+                    value={formData.message}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                    className={`mt-1 block w-full rounded-md shadow-sm py-2 px-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      errors.message ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    } ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    placeholder="Your message here..."
+                  />
                   {errors.message && (
-                    <p className="mt-1 text-sm text-red-500">{errors.message.message}</p>
+                    <p className="mt-1 text-sm text-red-500">{errors.message}</p>
                   )}
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={`w-full bg-brand text-white py-2 px-4 rounded-lg hover:bg-brand-dark transition-colors ${
-                    isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  {isSubmitting ? 'Sending...' : 'Send Message'}
-                </button>
+                {/* Submit Button */}
+                <div>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <FaPaperPlane className="mr-2" />
+                    {isSubmitting ? 'Sending...' : 'Send Message'}
+                  </button>
+                </div>
               </form>
             </div>
-
-            {/* Office Locations */}
-            <div>
-              <h2 className="text-3xl font-bold mb-8 text-gray-800 dark:text-white">Our Offices</h2>
-              <div className="space-y-8">
-                {offices.map((office) => (
-                  <div
-                    key={office.id}
-                    className="bg-white dark:bg-dark-accent p-6 rounded-lg shadow-lg"
-                  >
-                    <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">{office.city}</h3>
-                    <div className="space-y-2 text-gray-600 dark:text-gray-300">
-                      <p>{office.address}</p>
-                      <p className="mt-4">
-                        <span className="font-medium">Phone:</span> {office.phone}
-                      </p>
-                      <p>
-                        <span className="font-medium">Email:</span>{' '}
-                        <a
-                          href={`mailto:${office.email}`}
-                          className="text-brand hover:text-brand-dark transition-colors"
-                        >
-                          {office.email}
-                        </a>
-                      </p>
-                      <p className="mt-4">
-                        <span className="font-medium">Hours:</span> {office.timing}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-16 bg-brand-light dark:bg-dark-secondary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800 dark:text-white">
-            Frequently Asked Questions
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white dark:bg-dark-accent p-6 rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
-                How quickly can I expect a response?
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                We typically respond to all inquiries within 24 hours during business days. For urgent matters, 
-                please use our phone support.
-              </p>
-            </div>
-            <div className="bg-white dark:bg-dark-accent p-6 rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
-                Do you offer technical support?
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Yes, our technical support team is available to help with any issues related to our platform or SQL queries.
-              </p>
-            </div>
-            <div className="bg-white dark:bg-dark-accent p-6 rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
-                Can I request a feature?
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Absolutely! We welcome feature requests and feedback from our community. Use the contact form above to submit your ideas.
-              </p>
-            </div>
-            <div className="bg-white dark:bg-dark-accent p-6 rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
-                What are your business hours?
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Our support team is available Monday through Friday, 9:00 AM to 6:00 PM in your local timezone.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      </div>
     </div>
   );
 }

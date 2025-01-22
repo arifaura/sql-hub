@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaGoogle, FaFacebook } from 'react-icons/fa';
 import accountProtection from '../assets/img/loginImg.svg';
@@ -10,12 +10,16 @@ function Login() {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const { login, googleSignIn, facebookSignIn } = useAuth();
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            await login(email, password);
+            const success = await login(email, password);
+            if (success) {
+                navigate('/');
+            }
         } catch (error) {
             // Error handling is done in the auth context
             setIsLoading(false);
@@ -25,7 +29,10 @@ function Login() {
     const handleGoogleSignIn = async () => {
         setIsLoading(true);
         try {
-            await googleSignIn();
+            const success = await googleSignIn();
+            if (success) {
+                navigate('/');
+            }
         } catch (error) {
             // Error handling is done in the auth context
             setIsLoading(false);
@@ -35,7 +42,10 @@ function Login() {
     const handleFacebookSignIn = async () => {
         setIsLoading(true);
         try {
-            await facebookSignIn();
+            const success = await facebookSignIn();
+            if (success) {
+                navigate('/');
+            }
         } catch (error) {
             // Error handling is done in the auth context
             setIsLoading(false);

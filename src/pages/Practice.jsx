@@ -1,224 +1,135 @@
-import { useState, useEffect, useRef } from 'react';
-import { FaCode, FaDatabase, FaLightbulb, FaTrophy } from 'react-icons/fa';
-import { useGsapAnimations } from '../hooks/useGsapAnimations';
+import { useState } from 'react';
+import { FaCode, FaDatabase, FaLightbulb } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 function Practice() {
-  const [selectedDifficulty, setSelectedDifficulty] = useState('all');
-  const { fadeInUp, staggerFadeInUp, scaleIn, scrollAnimation } = useGsapAnimations();
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
-  // Refs for animations
-  const headerRef = useRef(null);
-  const statsRef = useRef(null);
-  const filterRef = useRef(null);
-  const challengesRef = useRef(null);
-  const statCardsRefs = useRef([]);
-
-  useEffect(() => {
-    // Initial animations
-    fadeInUp(headerRef.current);
-    
-    // Animate stat cards with stagger
-    staggerFadeInUp(statCardsRefs.current);
-    
-    // Filter buttons animation
-    scaleIn(filterRef.current, 0.5);
-    
-    // Scroll-triggered animations for challenges
-    scrollAnimation(challengesRef.current);
-  }, []);
-
-  const challenges = [
+  const categories = [
     {
-      id: 1,
-      title: "Basic SELECT Queries",
-      description: "Practice writing simple SELECT statements with WHERE clauses",
-      difficulty: "beginner",
-      estimatedTime: "15 mins",
-      points: 10,
+      id: 'basic',
+      title: 'Basic SQL',
+      description: 'Practice fundamental SQL queries and operations',
+      icon: <FaCode className="w-6 h-6" />,
+      exercises: [
+        { id: 1, title: 'SELECT Statements', difficulty: 'Easy' },
+        { id: 2, title: 'WHERE Clauses', difficulty: 'Easy' },
+        { id: 3, title: 'ORDER BY and GROUP BY', difficulty: 'Medium' }
+      ]
     },
     {
-      id: 2,
-      title: "JOIN Operations",
-      description: "Master different types of JOINs with multiple tables",
-      difficulty: "intermediate",
-      estimatedTime: "25 mins",
-      points: 20,
+      id: 'intermediate',
+      title: 'Intermediate SQL',
+      description: 'Learn and practice JOINs and subqueries',
+      icon: <FaDatabase className="w-6 h-6" />,
+      exercises: [
+        { id: 4, title: 'INNER and LEFT JOINs', difficulty: 'Medium' },
+        { id: 5, title: 'Subqueries', difficulty: 'Medium' },
+        { id: 6, title: 'Aggregate Functions', difficulty: 'Medium' }
+      ]
     },
     {
-      id: 3,
-      title: "Aggregate Functions",
-      description: "Work with GROUP BY and aggregate functions",
-      difficulty: "intermediate",
-      estimatedTime: "20 mins",
-      points: 15,
-    },
-    {
-      id: 4,
-      title: "Subqueries Advanced",
-      description: "Complex subqueries and correlated subqueries",
-      difficulty: "advanced",
-      estimatedTime: "30 mins",
-      points: 25,
-    },
+      id: 'advanced',
+      title: 'Advanced SQL',
+      description: 'Master complex queries and optimizations',
+      icon: <FaLightbulb className="w-6 h-6" />,
+      exercises: [
+        { id: 7, title: 'Window Functions', difficulty: 'Hard' },
+        { id: 8, title: 'CTEs and Views', difficulty: 'Hard' },
+        { id: 9, title: 'Query Optimization', difficulty: 'Hard' }
+      ]
+    }
   ];
 
-  const filteredChallenges = selectedDifficulty === 'all' 
-    ? challenges 
-    : challenges.filter(challenge => challenge.difficulty === selectedDifficulty);
-
   const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case 'beginner':
-        return 'text-green-500';
-      case 'intermediate':
-        return 'text-yellow-500';
-      case 'advanced':
-        return 'text-red-500';
+    switch (difficulty.toLowerCase()) {
+      case 'easy':
+        return 'text-green-500 bg-green-100 dark:bg-green-900 dark:text-green-300';
+      case 'medium':
+        return 'text-yellow-500 bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'hard':
+        return 'text-red-500 bg-red-100 dark:bg-red-900 dark:text-red-300';
       default:
-        return 'text-gray-500';
+        return 'text-gray-500 bg-gray-100 dark:bg-gray-900 dark:text-gray-300';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-dark-primary py-12">
-      {/* Header Section */}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center" ref={headerRef}>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            SQL Practice Challenges
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            SQL Practice Exercises
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Enhance your SQL skills with our interactive challenges. Practice real-world scenarios and level up your database expertise.
+          <p className="text-lg text-gray-600 dark:text-gray-400">
+            Choose a category and start practicing SQL queries
           </p>
         </div>
 
-        {/* Stats Section */}
-        <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4" ref={statsRef}>
-          {[
-            {
-              icon: <FaCode className="h-6 w-6 text-brand" />,
-              title: "Total Challenges",
-              value: "24"
-            },
-            {
-              icon: <FaDatabase className="h-6 w-6 text-brand" />,
-              title: "Databases Available",
-              value: "8"
-            },
-            {
-              icon: <FaLightbulb className="h-6 w-6 text-brand" />,
-              title: "Skill Levels",
-              value: "3"
-            },
-            {
-              icon: <FaTrophy className="h-6 w-6 text-brand" />,
-              title: "Points Available",
-              value: "450"
-            }
-          ].map((stat, index) => (
+        {/* Categories Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          {categories.map((category) => (
             <div
-              key={stat.title}
-              ref={el => statCardsRefs.current[index] = el}
-              className="bg-white dark:bg-dark-accent overflow-hidden shadow rounded-lg"
+              key={category.id}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow"
+              onClick={() => setSelectedCategory(category.id === selectedCategory ? null : category.id)}
             >
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    {stat.icon}
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
-                        {stat.title}
-                      </dt>
-                      <dd className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {stat.value}
-                      </dd>
-                    </dl>
-                  </div>
+              <div className="flex items-center mb-4">
+                <div className="p-2 bg-brand/10 dark:bg-brand/20 rounded-lg text-brand">
+                  {category.icon}
                 </div>
+                <h3 className="ml-3 text-xl font-semibold text-gray-900 dark:text-white">
+                  {category.title}
+                </h3>
               </div>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                {category.description}
+              </p>
+              {selectedCategory === category.id && (
+                <div className="space-y-3 mt-4 border-t pt-4 dark:border-gray-700">
+                  {category.exercises.map((exercise) => (
+                    <Link
+                      key={exercise.id}
+                      to={`/sql-editor?exercise=${exercise.id}`}
+                      className="block p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-900 dark:text-white">
+                          {exercise.title}
+                        </span>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${getDifficultyColor(exercise.difficulty)}`}>
+                          {exercise.difficulty}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+              <button
+                className="mt-4 text-brand hover:text-brand-dark dark:hover:text-brand-light transition-colors text-sm font-medium"
+                onClick={() => setSelectedCategory(category.id === selectedCategory ? null : category.id)}
+              >
+                {selectedCategory === category.id ? 'Show Less' : 'View Exercises'}
+              </button>
             </div>
           ))}
         </div>
 
-        {/* Filter Section */}
-        <div className="mt-8 flex justify-center space-x-4" ref={filterRef}>
-          <button
-            onClick={() => setSelectedDifficulty('all')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              selectedDifficulty === 'all'
-                ? 'bg-brand text-white'
-                : 'bg-white dark:bg-dark-accent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-primary'
-            }`}
+        {/* Quick Start Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Ready to Practice?
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Jump straight into our SQL editor and start writing queries
+          </p>
+          <Link
+            to="/sql-editor"
+            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-brand hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand transition-colors"
           >
-            All
-          </button>
-          <button
-            onClick={() => setSelectedDifficulty('beginner')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              selectedDifficulty === 'beginner'
-                ? 'bg-brand text-white'
-                : 'bg-white dark:bg-dark-accent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-primary'
-            }`}
-          >
-            Beginner
-          </button>
-          <button
-            onClick={() => setSelectedDifficulty('intermediate')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              selectedDifficulty === 'intermediate'
-                ? 'bg-brand text-white'
-                : 'bg-white dark:bg-dark-accent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-primary'
-            }`}
-          >
-            Intermediate
-          </button>
-          <button
-            onClick={() => setSelectedDifficulty('advanced')}
-            className={`px-4 py-2 rounded-lg transition-colors ${
-              selectedDifficulty === 'advanced'
-                ? 'bg-brand text-white'
-                : 'bg-white dark:bg-dark-accent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-primary'
-            }`}
-          >
-            Advanced
-          </button>
-        </div>
-
-        {/* Challenges Grid */}
-        <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3" ref={challengesRef}>
-          {filteredChallenges.map((challenge) => (
-            <div
-              key={challenge.id}
-              className="bg-white dark:bg-dark-accent rounded-lg shadow-md hover:shadow-lg transition-shadow"
-            >
-              <div className="p-6">
-                <div className="flex justify-between items-start">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {challenge.title}
-                  </h3>
-                  <span className={`text-sm font-medium capitalize ${getDifficultyColor(challenge.difficulty)}`}>
-                    {challenge.difficulty}
-                  </span>
-                </div>
-                <p className="mt-2 text-gray-600 dark:text-gray-300">
-                  {challenge.description}
-                </p>
-                <div className="mt-4 flex justify-between items-center">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {challenge.estimatedTime}
-                  </span>
-                  <span className="text-sm font-semibold text-brand">
-                    {challenge.points} points
-                  </span>
-                </div>
-                <button className="mt-4 w-full px-4 py-2 bg-brand hover:bg-brand-dark text-white rounded-lg transition-colors">
-                  Start Challenge
-                </button>
-              </div>
-            </div>
-          ))}
+            Open SQL Editor
+          </Link>
         </div>
       </div>
     </div>
