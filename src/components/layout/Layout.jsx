@@ -4,11 +4,13 @@ import { useState, useEffect, useRef } from 'react'
 import ThemeToggle from '../ThemeToggle'
 import { useGsapAnimations } from '../../hooks/useGsapAnimations'
 import gsap from 'gsap'
+import { FaBars, FaTimes, FaUser } from 'react-icons/fa'
 
 function Layout() {
   const location = useLocation()
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
   const { fadeInUp, staggerFadeInUp, slideInLeft } = useGsapAnimations()
 
   // Refs for animations
@@ -87,17 +89,38 @@ function Layout() {
   }, [location.pathname])
 
   const isActiveLink = (path) => {
-    return location.pathname === path ? 'bg-blue-700' : ''
+    return location.pathname === path
   }
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.profile-dropdown')) {
+        setIsProfileDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [])
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      setIsProfileDropdownOpen(false)
+    } catch (error) {
+      console.error('Failed to logout:', error)
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-dark-primary">
       {/* Navigation */}
-      <nav className="bg-blue-600 dark:bg-dark-secondary text-white shadow-lg" ref={navRef}>
+      <nav className="bg-blue-600 dark:bg-dark-secondary text-white shadow-lg relative z-50" ref={navRef}>
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
             {/* Logo/Brand */}
@@ -108,171 +131,187 @@ function Layout() {
             </div>
 
             {/* Mobile menu button */}
-            <div className="md:hidden flex items-center">
+            <div className="md:hidden flex items-center space-x-4">
               <ThemeToggle />
               <button
                 onClick={toggleMobileMenu}
-                className="inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-blue-700 focus:outline-none ml-2"
-                aria-expanded="false"
+                className="inline-flex items-center justify-center p-2 rounded-md hover:bg-blue-700 focus:outline-none"
               >
-                <span className="sr-only">Open main menu</span>
-                {/* Hamburger icon */}
-                <svg
-                  className={`${isMobileMenuOpen ? 'hidden' : 'block'} h-6 w-6`}
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-                {/* Close icon */}
-                <svg
-                  className={`${isMobileMenuOpen ? 'block' : 'hidden'} h-6 w-6`}
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                {isMobileMenuOpen ? (
+                  <FaTimes className="h-6 w-6" />
+                ) : (
+                  <FaBars className="h-6 w-6" />
+                )}
               </button>
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex md:items-center md:space-x-4" ref={navLinksRef}>
+            <div className="hidden md:flex md:items-center md:space-x-4 relative" ref={navLinksRef}>
               <Link
                 to="/"
-                className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/')}`}
+                className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/') ? 'bg-blue-700' : ''}`}
               >
                 Home
               </Link>
               <Link
                 to="/about"
-                className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/about')}`}
+                className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/about') ? 'bg-blue-700' : ''}`}
               >
                 About
               </Link>
               <Link
-                to="/lessons"
-                className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/lessons')}`}
-              >
-                Lessons
-              </Link>
-              <Link
                 to="/practice"
-                className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/practice')}`}
+                className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/practice') ? 'bg-blue-700' : ''}`}
               >
                 Practice
               </Link>
               <Link
-                to="/quizzes"
-                className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/quizzes')}`}
-              >
-                Quizzes
-              </Link>
-              <Link
                 to="/contact"
-                className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/contact')}`}
+                className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/contact') ? 'bg-blue-700' : ''}`}
               >
                 Contact
               </Link>
-              {user ? (
-                <Link
-                  to="/profile"
-                  className={`px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/profile')}`}
-                >
-                  Profile
-                </Link>
-              ) : (
-                <Link
-                  to="/login"
-                  className="px-4 py-2 rounded-md text-sm font-medium bg-white text-blue-600 hover:bg-gray-100 transition-colors dark:bg-dark-accent dark:text-white dark:hover:bg-dark-primary"
-                >
-                  Login
-                </Link>
-              )}
-              <ThemeToggle />
+              {/* Right side items */}
+              <div className="hidden md:flex items-center space-x-4">
+                <ThemeToggle />
+                {user ? (
+                  <div className="relative profile-dropdown">
+                    <button
+                      onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                      className="flex items-center space-x-2 focus:outline-none relative z-10"
+                    >
+                      {user.photoURL ? (
+                        <img
+                          src={user.photoURL}
+                          alt="Profile"
+                          className="h-8 w-8 rounded-full object-cover border-2 border-white"
+                        />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-blue-700 flex items-center justify-center border-2 border-white">
+                          <FaUser className="h-4 w-4 text-white" />
+                        </div>
+                      )}
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {isProfileDropdownOpen && (
+                      <div className="absolute right-0 top-full mt-2 w-48 rounded-md shadow-xl bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5" style={{ zIndex: 9999 }}>
+                        <div className="py-1" role="menu">
+                          <Link
+                            to="/profile"
+                            className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            role="menuitem"
+                            onClick={() => setIsProfileDropdownOpen(false)}
+                          >
+                            Profile
+                          </Link>
+                          <button
+                            onClick={handleLogout}
+                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            role="menuitem"
+                          >
+                            Logout
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-4">
+                    <Link
+                      to="/login"
+                      className="text-sm font-medium hover:text-blue-200 transition-colors"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="bg-white text-blue-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-50 transition-colors"
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Mobile Navigation Menu */}
-          <div
-            ref={mobileMenuRef}
-            className={`${isMobileMenuOpen ? 'block' : 'hidden'} md:hidden pb-3`}
-          >
-            <div className="flex flex-col space-y-2">
-              <Link
-                to="/"
-                onClick={toggleMobileMenu}
-                className={`px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/')}`}
-              >
-                Home
-              </Link>
-              <Link
-                to="/about"
-                onClick={toggleMobileMenu}
-                className={`px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/about')}`}
-              >
-                About
-              </Link>
-              <Link
-                to="/lessons"
-                onClick={toggleMobileMenu}
-                className={`px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/lessons')}`}
-              >
-                Lessons
-              </Link>
-              <Link
-                to="/practice"
-                onClick={toggleMobileMenu}
-                className={`px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/practice')}`}
-              >
-                Practice
-              </Link>
-              <Link
-                to="/quizzes"
-                onClick={toggleMobileMenu}
-                className={`px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/quizzes')}`}
-              >
-                Quizzes
-              </Link>
-              <Link
-                to="/contact"
-                onClick={toggleMobileMenu}
-                className={`px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/contact')}`}
-              >
-                Contact
-              </Link>
-              {user ? (
+          {isMobileMenuOpen && (
+            <div className="md:hidden">
+              <div className="px-2 pt-2 pb-3 space-y-1">
                 <Link
-                  to="/profile"
-                  onClick={toggleMobileMenu}
-                  className={`px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/profile')}`}
+                  to="/"
+                  className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/') ? 'bg-blue-700' : ''}`}
                 >
-                  Profile
+                  Home
                 </Link>
-              ) : (
                 <Link
-                  to="/login"
-                  onClick={toggleMobileMenu}
-                  className="px-3 py-2 rounded-md text-base font-medium bg-white text-blue-600 hover:bg-gray-100 transition-colors dark:bg-dark-accent dark:text-white dark:hover:bg-dark-primary"
+                  to="/about"
+                  className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/about') ? 'bg-blue-700' : ''}`}
                 >
-                  Login
+                  About
                 </Link>
-              )}
+                <Link
+                  to="/practice"
+                  className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/practice') ? 'bg-blue-700' : ''}`}
+                >
+                  Practice
+                </Link>
+                <Link
+                  to="/contact"
+                  className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors ${isActiveLink('/contact') ? 'bg-blue-700' : ''}`}
+                >
+                  Contact
+                </Link>
+                {user ? (
+                  <>
+                    <div className="flex items-center px-3 py-2">
+                      {user.photoURL ? (
+                        <img
+                          src={user.photoURL}
+                          alt="Profile"
+                          className="h-8 w-8 rounded-full object-cover border-2 border-white mr-2"
+                        />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-blue-700 flex items-center justify-center border-2 border-white mr-2">
+                          <FaUser className="h-4 w-4 text-white" />
+                        </div>
+                      )}
+                      <span className="text-sm font-medium">{user.displayName || user.email}</span>
+                    </div>
+                    <Link
+                      to="/profile"
+                      className="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors"
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      className="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors"
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </nav>
 
