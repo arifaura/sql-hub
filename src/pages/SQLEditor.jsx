@@ -340,7 +340,7 @@ function SQLEditor() {
                       <div key={table.name} className="space-y-1">
                         <button
                           onClick={() => insertSampleQuery(table.name)}
-                          className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white cursor-pointer px-2 py-1 w-full text-left hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                          className="text-sm text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400 cursor-pointer px-2 py-1 w-full text-left hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                         >
                           {table.name}
                         </button>
@@ -364,14 +364,14 @@ function SQLEditor() {
                 <div className="flex space-x-2">
                   <button
                     onClick={copyQuery}
-                    className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    className="p-2 text-green-500 hover:text-green-600 dark:text-green-400 dark:hover:text-green-300"
                     title="Copy Query"
                   >
                     <FaCopy />
                   </button>
                   <button
                     onClick={() => {/* TODO: Implement save query */}}
-                    className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    className="p-2 text-green-500 hover:text-green-600 dark:text-green-400 dark:hover:text-green-300"
                     title="Save Query"
                   >
                     <FaSave />
@@ -393,10 +393,10 @@ function SQLEditor() {
                   <button
                     onClick={handleExecuteQuery}
                     disabled={isExecuting || !db}
-                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2"
                   >
-                    <FaPlay className="mr-2" />
-                    {isExecuting ? 'Executing...' : 'Execute Query'}
+                    <FaPlay className="w-4 h-4" />
+                    <span>{isExecuting ? 'Executing...' : 'Run Query'}</span>
                   </button>
                 </div>
               </div>
@@ -409,7 +409,7 @@ function SQLEditor() {
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Results</h2>
                   <button
                     onClick={downloadResults}
-                    className="flex items-center px-3 py-1 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    className="flex items-center px-3 py-1 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600"
                   >
                     <FaDownload className="mr-2" />
                     Download CSV

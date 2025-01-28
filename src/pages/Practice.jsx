@@ -76,7 +76,7 @@ function Practice() {
               onClick={() => setSelectedCategory(category.id === selectedCategory ? null : category.id)}
             >
               <div className="flex items-center mb-4">
-                <div className="p-2 bg-brand/10 dark:bg-brand/20 rounded-lg text-brand">
+                <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg text-green-500">
                   {category.icon}
                 </div>
                 <h3 className="ml-3 text-xl font-semibold text-gray-900 dark:text-white">
@@ -107,7 +107,7 @@ function Practice() {
                 </div>
               )}
               <button
-                className="mt-4 text-brand hover:text-brand-dark dark:hover:text-brand-light transition-colors text-sm font-medium"
+                className="mt-4 text-green-500 hover:text-green-600 dark:hover:text-green-400 transition-colors text-sm font-medium"
                 onClick={() => setSelectedCategory(category.id === selectedCategory ? null : category.id)}
               >
                 {selectedCategory === category.id ? 'Show Less' : 'View Exercises'}
@@ -126,7 +126,7 @@ function Practice() {
           </p>
           <Link
             to="/sql-editor"
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-brand hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand transition-colors"
+            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
           >
             Open SQL Editor
           </Link>

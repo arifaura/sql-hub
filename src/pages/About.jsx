@@ -1,4 +1,5 @@
-import { FaGithub, FaLinkedin, FaCode, FaDatabase, FaGraduationCap } from 'react-icons/fa';
+import { FaGithub, FaLinkedin, FaCode, FaDatabase, FaGraduationCap, FaArrowRight } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 function About() {
   const features = [
@@ -64,8 +65,10 @@ function About() {
               key={index}
               className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6"
             >
-              <div className="p-2 bg-brand/10 dark:bg-brand/20 rounded-lg text-brand inline-block mb-4">
-                {feature.icon}
+              <div className="p-4 bg-green-100 dark:bg-green-900 rounded-lg">
+                <div className="text-green-500">
+                  {feature.icon}
+                </div>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                 {feature.title}
@@ -114,27 +117,37 @@ function About() {
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                   {member.role}
                 </p>
-                <div className="flex justify-center space-x-4">
+                <div className="flex space-x-4">
                   <a
                     href={member.github}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-600 dark:text-gray-400 hover:text-brand dark:hover:text-brand transition-colors"
+                    className="text-green-500 hover:text-green-600 transition-colors"
                   >
-                    <FaGithub className="w-6 h-6" />
+                    <FaGithub className="w-5 h-5" />
                   </a>
                   <a
                     href={member.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-600 dark:text-gray-400 hover:text-brand dark:hover:text-brand transition-colors"
+                    className="text-green-500 hover:text-green-600 transition-colors"
                   >
-                    <FaLinkedin className="w-6 h-6" />
+                    <FaLinkedin className="w-5 h-5" />
                   </a>
                 </div>
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="text-center mt-12">
+          <Link
+            to="/contact"
+            className="inline-flex items-center px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+          >
+            Get in Touch
+            <FaArrowRight className="ml-2 w-4 h-4" />
+          </Link>
         </div>
       </div>
     </div>

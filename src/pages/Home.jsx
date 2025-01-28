@@ -1,135 +1,266 @@
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-function Home() {
-    const { user } = useAuth();
+// Separate components for better performance
+function HeroSection() {
+    const [imageLoaded, setImageLoaded] = useState(false);
 
     return (
-        <div className="min-h-screen bg-white">
+        <section className="relative h-[600px] overflow-hidden">
+            <img 
+                src="/images/herobg.jpg" 
+                alt="SQL Database Background" 
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+                    imageLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
+                onLoad={() => setImageLoaded(true)}
+                priority="true"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-900/90 to-gray-900/80"></div>
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center">
+                <div className="text-center">
+                    <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">
+                        Master SQL today
+                    </h1>
+                    <p className="text-xl md:text-2xl mb-8 text-gray-200">
+                        Unlock your data potential
+                    </p>
+                    <Link
+                        to="/lessons"
+                        className="inline-block bg-green-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors uppercase tracking-wide"
+                    >
+                        VIEW SERVICES
+                    </Link>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function CourseCard({ image, title, description }) {
+    const [imageLoaded, setImageLoaded] = useState(false);
+
+    return (
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="relative h-48">
+                {!imageLoaded && (
+                    <div className="absolute inset-0 bg-gray-200 animate-pulse"></div>
+                )}
+                <img
+                    src={image}
+                    alt={title}
+                    className={`w-full h-48 object-cover transition-opacity duration-300 ${
+                        imageLoaded ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    loading="lazy"
+                    onLoad={() => setImageLoaded(true)}
+                />
+            </div>
+            <div className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    {title}
+                </h3>
+                <p className="text-gray-600">
+                    {description}
+                </p>
+                <Link
+                    to="/lessons"
+                    className="mt-4 inline-flex items-center text-green-500 hover:text-green-600"
+                >
+                    Learn more →
+                </Link>
+            </div>
+        </div>
+    );
+}
+
+function Home() {
+    const { user } = useAuth();
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        // Scroll to top when component mounts
+        window.scrollTo(0, 0);
+
+        // Preload images
+        const imagesToPreload = [
+            '/images/herobg.jpg',
+            '/images/pexels-cottonbro-4709287.jpg',
+            '/images/pexels-cottonbro-4709289.jpg',
+            '/images/pexels-pixabay-256502.jpg',
+            '/images/pexels-cottonbro-6636117.jpg'
+        ];
+
+        Promise.all(
+            imagesToPreload.map(src => {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.src = src;
+                    img.onload = resolve;
+                    img.onerror = reject;
+                });
+            })
+        ).finally(() => {
+            setIsLoading(false);
+        });
+    }, []);
+
+    const courseCards = [
+        {
+            image: '/images/pexels-cottonbro-4709289.jpg',
+            title: 'SQL fundamentals',
+            description: 'Master the basics of SQL with our comprehensive course.'
+        },
+        {
+            image: '/images/pexels-pixabay-256502.jpg',
+            title: 'Advanced SQL techniques',
+            description: 'Take your SQL skills to the next level with our advanced course.'
+        },
+        {
+            image: '/images/pexels-cottonbro-6636117.jpg',
+            title: 'SQL for data analysis',
+            description: 'Unlock the power of data with our SQL for Data Analysis course.'
+        }
+    ];
+
+    return (
+        <div className={`min-h-screen bg-white transition-opacity duration-500 ${isLoading ? 'opacity-0' : 'opacity-100'}`}>
             {/* Hero Section */}
-            <section className="relative bg-gradient-to-r from-brand to-brand-dark text-white py-20">
+            <HeroSection />
+
+            {/* Master SQL Section */}
+            <section className="py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center">
-                        <h1 className="text-4xl md:text-5xl font-bold mb-6">
-                            Master SQL with Interactive Lessons and Quizzes
-                        </h1>
-                        <p className="text-xl md:text-2xl mb-8">
-                            Learn SQL from scratch, practice with real-world examples, and track your progress
-                        </p>
-                        <div className="flex justify-center gap-4">
-                            {!user && (
-                                <Link
-                                    to="/register"
-                                    className="bg-white text-brand px-6 py-3 rounded-lg font-semibold hover:bg-brand-light transition-colors"
-                                >
-                                    Get Started
-                                </Link>
-                            )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                        <div>
+                            <div className="text-green-500 font-semibold mb-4 uppercase tracking-wide">
+                                UNLOCK YOUR SQL POTENTIAL
+                            </div>
+                            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                                Master SQL with expert guidance
+                            </h2>
+                            <p className="text-gray-600 mb-8">
+                                At sql-hub, we empower learners in Hyderabad, IN to master SQL through dynamic online courses and hands-on exercises. Our experienced instructors break down complex concepts into approachable lessons, ensuring you gain practical skills that you can apply immediately. Whether you're a beginner or looking to enhance your existing knowledge, sql-hub provides a supportive learning environment to help you succeed in your SQL journey.
+                            </p>
                             <Link
-                                to="/lessons"
-                                className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-brand transition-colors"
+                                to="/contact"
+                                className="text-green-500 font-semibold hover:text-green-600 transition-colors"
                             >
-                                Explore Lessons
+                                Get in touch
                             </Link>
                         </div>
-                    </div>
-                </div>
-                {/* Background decoration */}
-                <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
-            </section>
-
-            {/* Features Section */}
-            <section className="py-20 bg-brand-light dark:bg-dark-secondary">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h2 className="text-3xl font-bold text-center mb-12 text-gray-800 dark:text-white">Why Choose Us?</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {/* Feature 1 */}
-                        <div className="bg-white dark:bg-dark-accent p-6 rounded-lg shadow-lg">
-                            <div className="w-12 h-12 bg-brand/10 dark:bg-brand/20 rounded-lg flex items-center justify-center mb-4">
-                                <svg className="w-6 h-6 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                </svg>
-                            </div>
-                            <h3 className="text-xl font-semibold mb-2 text-gray-800 dark:text-white">Interactive Lessons</h3>
-                            <p className="text-gray-600 dark:text-dark-secondary">Learn SQL with hands-on examples and interactive code editors.</p>
-                        </div>
-
-                        {/* Feature 2 */}
-                        <div className="bg-white dark:bg-dark-accent p-6 rounded-lg shadow-lg">
-                            <div className="w-12 h-12 bg-brand/10 dark:bg-brand/20 rounded-lg flex items-center justify-center mb-4">
-                                <svg className="w-6 h-6 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                </svg>
-                            </div>
-                            <h3 className="text-xl font-semibold mb-2 text-gray-800 dark:text-white">Real-World Quizzes</h3>
-                            <p className="text-gray-600 dark:text-dark-secondary">Test your knowledge with quizzes designed for real-world scenarios.</p>
-                        </div>
-
-                        {/* Feature 3 */}
-                        <div className="bg-white dark:bg-dark-accent p-6 rounded-lg shadow-lg">
-                            <div className="w-12 h-12 bg-brand/10 dark:bg-brand/20 rounded-lg flex items-center justify-center mb-4">
-                                <svg className="w-6 h-6 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                            </div>
-                            <h3 className="text-xl font-semibold mb-2 text-gray-800 dark:text-white">Track Your Progress</h3>
-                            <p className="text-gray-600 dark:text-dark-secondary">Monitor your learning journey with detailed progress reports.</p>
+                        <div className="relative">
+                            <img
+                                src="/images/pexels-cottonbro-4709287.jpg"
+                                alt="SQL Learning Platform"
+                                className="rounded-lg shadow-xl w-full h-auto object-cover"
+                                loading="lazy"
+                            />
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Testimonials Section */}
-            <section className="py-20 bg-white dark:bg-dark-primary">
+            {/* Course Cards Section */}
+            <section className="py-20 bg-gray-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h2 className="text-3xl font-bold text-center mb-12 text-gray-800 dark:text-white">What Our Users Say</h2>
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                            MASTER SQL SKILLS
+                        </h2>
+                        <p className="text-xl text-gray-600">
+                            Unlock the power of data management
+                        </p>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {/* Testimonial 1 */}
-                        <div className="bg-brand-light dark:bg-dark-accent p-6 rounded-lg shadow-md">
-                            <div className="flex items-center mb-4">
-                                <div className="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center">
-                                    <span className="font-semibold">JD</span>
-                                </div>
-                                <div className="ml-4">
-                                    <h4 className="font-semibold text-gray-800 dark:text-white">John Doe</h4>
-                                    <p className="text-gray-600 dark:text-dark-secondary">Data Analyst</p>
-                                </div>
-                            </div>
-                            <p className="text-gray-600 dark:text-dark-secondary">
-                                "This app helped me land my dream job as a data analyst! The interactive lessons made learning SQL enjoyable."
-                            </p>
-                        </div>
+                        {courseCards.map((card, index) => (
+                            <CourseCard key={index} {...card} />
+                        ))}
+                    </div>
+                </div>
+            </section>
 
-                        {/* Testimonial 2 */}
-                        <div className="bg-brand-light dark:bg-dark-accent p-6 rounded-lg shadow-md">
-                            <div className="flex items-center mb-4">
-                                <div className="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center">
-                                    <span className="font-semibold">JS</span>
-                                </div>
-                                <div className="ml-4">
-                                    <h4 className="font-semibold text-gray-800 dark:text-white">Jane Smith</h4>
-                                    <p className="text-gray-600 dark:text-dark-secondary">Software Developer</p>
-                                </div>
+            {/* Contact Form Section */}
+            <section className="py-20">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                        <div>
+                            <div className="text-green-500 font-semibold mb-4 uppercase tracking-wide">
+                                GET IN TOUCH
                             </div>
-                            <p className="text-gray-600 dark:text-dark-secondary">
-                                "The real-world examples and quizzes helped me understand complex SQL concepts quickly."
-                            </p>
+                            <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                                We're here to help you learn SQL!
+                            </h2>
+                            <form className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Name *</label>
+                                    <input
+                                        type="text"
+                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                                        placeholder="Jane Smith"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Email address *</label>
+                                    <input
+                                        type="email"
+                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                                        placeholder="email@website.com"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Phone number *</label>
+                                    <input
+                                        type="tel"
+                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                                        placeholder="555-555-5555"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Message</label>
+                                    <textarea
+                                        rows={4}
+                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                                    />
+                                </div>
+                                <div>
+                                    <button
+                                        type="submit"
+                                        className="w-full bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors"
+                                    >
+                                        SUBMIT
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-
-                        {/* Testimonial 3 */}
-                        <div className="bg-brand-light dark:bg-dark-accent p-6 rounded-lg shadow-md">
-                            <div className="flex items-center mb-4">
-                                <div className="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center">
-                                    <span className="font-semibold">RJ</span>
-                                </div>
-                                <div className="ml-4">
-                                    <h4 className="font-semibold text-gray-800 dark:text-white">Robert Johnson</h4>
-                                    <p className="text-gray-600 dark:text-dark-secondary">Business Analyst</p>
+                        <div className="bg-gray-50 p-8 rounded-lg">
+                            <h3 className="text-xl font-bold text-gray-900 mb-4">Get in touch</h3>
+                            <div className="space-y-4">
+                                <p>
+                                    <a href="mailto:microsoftai.bs@gmail.com" className="text-green-500 hover:text-green-600">
+                                        microsoftai.bs@gmail.com
+                                    </a>
+                                </p>
+                                <p>
+                                    <a href="#" className="text-gray-600">
+                                        Hyderabad, TS IN
+                                    </a>
+                                </p>
+                                <div className="border-t border-gray-200 pt-4">
+                                    <h4 className="font-semibold text-gray-900 mb-2">Hours</h4>
+                                    <div className="space-y-1 text-gray-600 font-mono">
+                                        <p>Monday    : 9:00am – 10:00pm</p>
+                                        <p>Tuesday   : 9:00am – 10:00pm</p>
+                                        <p>Wednesday : 9:00am – 10:00pm</p>
+                                        <p>Thursday  : 9:00am – 10:00pm</p>
+                                        <p>Friday    : 9:00am – 10:00pm</p>
+                                        <p>Saturday  : 9:00am – 6:00pm</p>
+                                        <p>Sunday    : Closed</p>
+                                    </div>
                                 </div>
                             </div>
-                            <p className="text-gray-600 dark:text-dark-secondary">
-                                "The progress tracking feature kept me motivated throughout my learning journey."
-                            </p>
                         </div>
                     </div>
                 </div>

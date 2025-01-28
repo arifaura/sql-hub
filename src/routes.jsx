@@ -10,6 +10,8 @@ import SQLEditor from './pages/SQLEditor';
 import ForgotPassword from './pages/ForgotPassword';
 import Practice from './pages/Practice';
 import About from './pages/About';
+import Testimonials from './pages/Testimonials';
+import NotFound from './pages/NotFound';
 import PrivateRoute from './components/PrivateRoute';
 
 const router = createBrowserRouter([
@@ -43,19 +45,27 @@ const router = createBrowserRouter([
       },
       {
         path: 'lessons',
-        element: <Lessons />
+        element: <PrivateRoute><Lessons /></PrivateRoute>
       },
       {
         path: 'sql-editor',
-        element: <SQLEditor />
+        element: <PrivateRoute><SQLEditor /></PrivateRoute>
       },
       {
         path: 'practice',
-        element: <Practice />
+        element: <PrivateRoute><Practice /></PrivateRoute>
       },
       {
         path: 'about',
         element: <About />
+      },
+      {
+        path: 'testimonials',
+        element: <Testimonials />
+      },
+      {
+        path: '*',
+        element: <NotFound />
       }
     ]
   }

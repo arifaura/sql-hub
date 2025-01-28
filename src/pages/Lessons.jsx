@@ -1,7 +1,186 @@
 import { Link } from 'react-router-dom';
-import { FaDatabase, FaCode, FaChartLine, FaTrophy, FaBook, FaUsers, FaLaptopCode, FaCheck } from 'react-icons/fa';
+import { FaDatabase, FaCode, FaChartLine, FaTrophy, FaBook, FaUsers, FaLaptopCode, FaCheck, FaVideo, FaFileAlt, FaLaptop, FaQuestion } from 'react-icons/fa';
 import { useLessons } from '../context/LessonsContext';
 import { useAuth } from '../context/AuthContext';
+import { useState, useEffect } from 'react';
+
+function LessonCard({ lesson, levelColor }) {
+  const [activeTab, setActiveTab] = useState('overview');
+  const { isLessonCompleted, markLessonComplete } = useLessons();
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+      <div className={`h-2 ${levelColor}`} />
+      <div className="p-6">
+        <div className="flex items-start justify-between mb-2">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+            {lesson.title}
+          </h3>
+          {isLessonCompleted(lesson.id) && (
+            <FaCheck className="text-green-500 w-5 h-5 flex-shrink-0" />
+          )}
+        </div>
+        
+        {/* Tabs */}
+        <div className="flex space-x-4 mb-4 border-b dark:border-gray-700">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`pb-2 ${activeTab === 'overview' ? 'border-b-2 border-green-500 text-green-500' : 'text-gray-500'}`}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('video')}
+            className={`pb-2 flex items-center space-x-1 ${activeTab === 'video' ? 'border-b-2 border-green-500 text-green-500' : 'text-gray-500'}`}
+          >
+            <FaVideo className="w-4 h-4" />
+            <span>Video</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('docs')}
+            className={`pb-2 flex items-center space-x-1 ${activeTab === 'docs' ? 'border-b-2 border-green-500 text-green-500' : 'text-gray-500'}`}
+          >
+            <FaFileAlt className="w-4 h-4" />
+            <span>Docs</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('exercise')}
+            className={`pb-2 flex items-center space-x-1 ${activeTab === 'exercise' ? 'border-b-2 border-green-500 text-green-500' : 'text-gray-500'}`}
+          >
+            <FaLaptop className="w-4 h-4" />
+            <span>Exercise</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('quiz')}
+            className={`pb-2 flex items-center space-x-1 ${activeTab === 'quiz' ? 'border-b-2 border-green-500 text-green-500' : 'text-gray-500'}`}
+          >
+            <FaQuestion className="w-4 h-4" />
+            <span>Quiz</span>
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <div className="mb-4">
+          {activeTab === 'overview' && (
+            <>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                {lesson.description}
+              </p>
+              <div className="mb-4">
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Key Concepts:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {lesson.concepts.map((concept, i) => (
+                    <span
+                      key={i}
+                      className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs rounded-full"
+                    >
+                      {concept}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeTab === 'video' && (
+            <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+              <iframe
+                src={lesson.videoUrl}
+                title={`${lesson.title} Tutorial`}
+                className="absolute top-0 left-0 w-full h-full rounded-lg"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                loading="lazy"
+              />
+            </div>
+          )}
+
+          {activeTab === 'docs' && lesson.documentation && (
+            <div className="prose dark:prose-invert max-w-none">
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                {lesson.documentation.overview}
+              </p>
+              {lesson.documentation.sections.map((section, index) => (
+                <div key={index} className="mb-4">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    {section.title}
+                  </h4>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    {section.content}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {activeTab === 'exercise' && lesson.exercises && (
+            <div>
+              {lesson.exercises.map((exercise, index) => (
+                <div key={index} className="mb-4">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    {exercise.title}
+                  </h4>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">
+                    {exercise.description}
+                  </p>
+                  <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+                    <pre className="text-sm">
+                      <code>{exercise.initialCode}</code>
+                    </pre>
+                  </div>
+                  <Link
+                    to={`/sql-editor?exercise=${exercise.id}`}
+                    className="mt-4 inline-flex items-center text-green-500 hover:text-green-600"
+                  >
+                    Try it yourself →
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {activeTab === 'quiz' && lesson.quiz && (
+            <div>
+              {lesson.quiz.questions.map((question, index) => (
+                <div key={index} className="mb-6">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
+                    {question.question}
+                  </h4>
+                  <div className="space-y-2">
+                    {question.options.map((option, optionIndex) => (
+                      <button
+                        key={optionIndex}
+                        className="w-full text-left p-3 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            Duration: {lesson.duration}
+          </span>
+          <button
+            onClick={() => markLessonComplete(lesson.id)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              isLessonCompleted(lesson.id)
+                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                : 'bg-green-500 text-white hover:bg-green-600'
+            }`}
+          >
+            {isLessonCompleted(lesson.id) ? 'Completed' : 'Start Lesson'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function Lessons() {
   const { user } = useAuth();
@@ -15,14 +194,19 @@ function Lessons() {
     isLessonCompleted
   } = useLessons();
 
+  // Scroll to top when component mounts or level changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [selectedLevel]);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Hero Section */}
-      <div className="bg-blue-600 dark:bg-gray-800 text-white py-16">
+      <div className="bg-green-500 dark:bg-gray-800 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-4">Master SQL: From Beginner to Advanced</h1>
-            <p className="text-xl text-blue-100 dark:text-gray-300 mb-8">
+            <p className="text-xl text-green-100 dark:text-gray-300 mb-8">
               Unlock the power of databases with step-by-step SQL lessons, real-world examples, and hands-on exercises.
             </p>
             {user ? (
@@ -39,14 +223,14 @@ function Lessons() {
                     />
                   </div>
                 </div>
-                <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
+                <button className="bg-white text-green-500 px-8 py-3 rounded-lg font-semibold hover:bg-green-50 transition-colors">
                   Continue Learning
                 </button>
               </div>
             ) : (
               <Link
                 to="/login"
-                className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+                className="bg-white text-green-500 px-8 py-3 rounded-lg font-semibold hover:bg-green-50 transition-colors"
               >
                 Start Learning Now
               </Link>
@@ -89,55 +273,13 @@ function Lessons() {
         </div>
 
         {/* Lesson Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           {levels[selectedLevel].lessons.map((lesson) => (
-            <div
+            <LessonCard
               key={lesson.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
-            >
-              <div className={`h-2 ${levels[selectedLevel].color}`} />
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    {lesson.title}
-                  </h3>
-                  {isLessonCompleted(lesson.id) && (
-                    <FaCheck className="text-green-500 w-5 h-5 flex-shrink-0" />
-                  )}
-                </div>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  {lesson.description}
-                </p>
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Key Concepts:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {lesson.concepts.map((concept, i) => (
-                      <span
-                        key={i}
-                        className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full"
-                      >
-                        {concept}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    Duration: {lesson.duration}
-                  </span>
-                  <button
-                    onClick={() => markLessonComplete(lesson.id)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      isLessonCompleted(lesson.id)
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                  >
-                    {isLessonCompleted(lesson.id) ? 'Completed' : 'Start Lesson'}
-                  </button>
-                </div>
-              </div>
-            </div>
+              lesson={lesson}
+              levelColor={levels[selectedLevel].color}
+            />
           ))}
         </div>
       </div>
@@ -147,7 +289,7 @@ function Lessons() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white mx-auto mb-4">
+              <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center text-white mx-auto mb-4">
                 <FaLaptopCode className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Interactive Learning</h3>
@@ -183,12 +325,12 @@ function Lessons() {
         <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Additional Resources</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-            <FaBook className="w-8 h-8 text-blue-600 mb-4" />
+            <FaBook className="w-8 h-8 text-green-500 mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Documentation</h3>
             <p className="text-gray-600 dark:text-gray-300 mb-4">
               Access comprehensive SQL documentation and references
             </p>
-            <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">Learn More →</a>
+            <a href="#" className="text-green-500 hover:text-green-600 font-medium">Learn More →</a>
           </div>
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
             <FaChartLine className="w-8 h-8 text-green-600 mb-4" />
@@ -196,7 +338,7 @@ function Lessons() {
             <p className="text-gray-600 dark:text-gray-300 mb-4">
               Strengthen your skills with hands-on exercises
             </p>
-            <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">Start Practice →</a>
+            <a href="#" className="text-green-500 hover:text-green-600 font-medium">Start Practice →</a>
           </div>
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
             <FaCode className="w-8 h-8 text-purple-600 mb-4" />
@@ -204,7 +346,7 @@ function Lessons() {
             <p className="text-gray-600 dark:text-gray-300 mb-4">
               Browse through real-world SQL code examples
             </p>
-            <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">View Examples →</a>
+            <a href="#" className="text-green-500 hover:text-green-600 font-medium">View Examples →</a>
           </div>
         </div>
       </div>
