@@ -142,7 +142,7 @@ function Footer() {
             </p>
             <div className="flex items-center mt-4 md:mt-0">
               <span className="text-gray-600 dark:text-gray-400 text-sm">
-                Made with <FaHeart className="inline-block text-red-500 mx-1" /> by SQLHub Team
+                Made with <FaHeart className="inline-block text-red-500 mx-1" /> by Arif Ali
               </span>
             </div>
           </div>
