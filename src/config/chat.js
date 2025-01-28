@@ -1,0 +1,1 @@
+export const TIDIO_PUBLIC_KEY = 'YOUR_PUBLIC_KEY_HERE'; // Replace with your actual Tidio public key 

@@ -5,6 +5,7 @@ import ThemeToggle from '../ThemeToggle'
 import { useGsapAnimations } from '../../hooks/useGsapAnimations'
 import { ScrollToTopOnMount, ScrollToTopButton } from '../ScrollToTop'
 import Footer from './Footer'
+import TidioChat from '../TidioChat'
 import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
 import { FaBars, FaTimes, FaUser } from 'react-icons/fa'
@@ -142,6 +143,7 @@ function Layout() {
     <div className="min-h-screen flex flex-col bg-white dark:bg-dark-primary">
       <ScrollToTopOnMount />
       <ScrollToTopButton />
+      <TidioChat />
       
       {/* Navigation */}
       <nav className="bg-green-500 text-white shadow-lg relative z-50" ref={navRef}>
